@@ -115,6 +115,18 @@
 
                       </ul>
                 </li>
+                <li><a> Tickets <span class="fa fa-chevron-down"></span></a>
+                      <ul class="nav child_menu" style="display: none">
+                          <li><a href="">View All</a></li>
+
+                      </ul>
+                </li>
+                <li><a> Payments <span class="fa fa-chevron-down"></span></a>
+                      <ul class="nav child_menu" style="display: none">
+                          <li><a href="">View All</a></li>
+
+                      </ul>
+                </li>
                 <li><a href="{{ url('/') }}"> Go to site </a></li>
               </ul>
             </div>
