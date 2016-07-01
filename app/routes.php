@@ -200,13 +200,12 @@ Route::post('/result',function(){
 	 $transaction->save();
 	 //Ends Saving Transaction History
 
-	  //return "Date : ".$travel_date_suggestion;
 	  return View::make("trav.result")->with("results",$results)
 														->with("location",$location)
 														->with("destination",$destination)
 														->with("travelDate",$date_time_formatted)
 														->with("results_suggestion",$results_suggestion);
-		//return "Loc = ".$location." | Dest = ".$destination." |Date=".$date_time."| pax=".$pax;
+
 });
 
 /*Route::get('/activate_phoneNo',function(){
@@ -233,30 +232,56 @@ Route::get('/register',function(){
 });
 
 Route::post('/register',function(){
-	$user = User::create(["fullName"=>Input::get("fullName"),
-												"emailAddress"=>Input::get("emailAddress"),
-												"phoneNumber"=>Input::get("phoneNumber"),
-												"password"=>Hash::make(Input::get("password"))
-											]);
-	if($user->save())
-	{
-		//Send Email To User
+	$rules = array("fullName"=>"required|min:5",
+								 "emailAddress"=>"required|email|unique:users",
+								 "phoneNumber"=>"required|min:11|unique:users|numeric",
+								 "password"=>"required|min:3",
+								 "confirm_password"=>"required|same:password"
+							  );
+	$validator = Validator::make(Input::all(),$rules);
 
-		//Activate your trav account
-		Mail::send("emails.activate",array("fullName"=>Input::get("fullName"),function($message){
-			$message->to(Input::get("emailAddress"),Input::get("fullName"))->subject("Activate Your Trav Account");
-		}));
-		//Welcome To Trav Email Address
-		Mail::send("emails.registration",array("fullName"=>Input::get("fullName"),function($message){
-			$message->to(Input::get("emailAddress"),Input::get("fullName"))->subject("Welcome To Trav");
-		}));
-		//
-		return Redirect::to("/register")->withSuccess("User Successfully Registered , Login to your account");
+	if($validator->fails())
+	{
+		//return $validator->messages();
+		return Redirect::to("/register")->withErrors($validator);
 	}
 	else
 	{
-		return Redirect::back()->withInput()->withError("Invalid data supplied");
-	}
+
+	$user = User::create(["fullName"=>Input::get("fullName"),
+						  "emailAddress"=>Input::get("emailAddress"),
+						  "phoneNumber"=>Input::get("phoneNumber"),
+						  "password"=>Hash::make(Input::get("password"))
+											]);
+		//Activate your trav account
+
+
+				if($user->save())
+				{
+					//Welcome To Trav Email Address
+					$toEmail = Input::get("emailAddress");
+					$toFullname = Input::get("fullName");
+					$subject = "Welcome To Trav";
+					$fromEmail = "Mujahid.Raji@studentpartner.com";
+					$fromFullname = "Mujahid";
+					$data = array( "fullName"=>Input::get("fullName") );
+
+					Mail::send("emails.registration",$data,function($message){
+
+							$message->subject("Welcome To Trav");
+							$message->from("no-reply@trav.com.ng","no-reply");
+							$message->to(Input::get("emailAddress"),Input::get("fullName"));
+
+					});
+			    return Redirect::to("/login")->withSuccess("Account Successfully Created! Login to your account to continue");
+
+				}
+				else
+				{
+					return Redirect::back()->withInput()->withError("Invalid data supplied");
+				}
+		 }
+
 });
 
 Route::get("/register_api/{fullname}/{email}/{phoneNo}/{password}",function($fullname,$email,$phoneNo,$password){
@@ -391,12 +416,25 @@ Route::get("retrieve/password",function(){
 
 Route::post("/retrieve/password",function(){
 	$email = Input::get("emailAddress");
-  //send email
-	Mail::send('emails.password_reset',array("fullName"=>$user->fullName,function($message){
-			$message->to($user->emailAddress,$user->fullName)->subject("Trav Password Reset");
-	}));
 
-	return Redirect::to("/retrieve/password")->withSuccess("A password reset link has been sent to your email address");
+	$user = User::whereEmailaddress($email)->first();
+	if($user != "")
+	{
+			$emailAddress = $user->emailAddress
+			$fullName = $user->fullName;
+			$token = $user->remember_token;
+			$data = array("token"=>$token,"fullName"=>$fullName);
+		  //send email
+			Mail::send('emails.password_reset',$data,function($message){
+					$message->to($emailAddress,$fullName)->subject("Trav Password Reset");
+			});
+
+			return Redirect::to("/retrieve/password")->withSuccess("A password reset link has been sent to your email address");
+	}
+	else
+	{
+		return Redirect::to("/retrieve/password")->withError("This User does not exist. Click <a href='/register'>here</a> to create an account");
+	}
 });
 
 Route::get("/admin/users",function(){
