@@ -420,16 +420,21 @@ Route::post("/retrieve/password",function(){
 	$user = User::whereEmailaddress($email)->first();
 	if($user != "")
 	{
-			$emailAddress = $user->emailAddress
-			$fullName = $user->fullName;
 			$token = $user->remember_token;
-			$data = array("token"=>$token,"fullName"=>$fullName);
+			$user->password_reset_code = md5($token);
+
+
+		  $emailAddress = $user->emailAddress
+			$fullName = $user->fullName;
+			$password_reset_code = md5($token);
+			$data = array("token"=>$token,"fullName"=>$fullName,"password_reset_code"=>$password_reset_code);
 		  //send email
-			Mail::send('emails.password_reset',$data,function($message){
+			Mail::pretend('emails.password_reset',$data,function($message){
 					$message->to($emailAddress,$fullName)->subject("Trav Password Reset");
 			});
 
-			return Redirect::to("/retrieve/password")->withSuccess("A password reset link has been sent to your email address");
+			return "http://lar-imraj.rhcloud.com/".$token.md5($token);
+			//return Redirect::to("/retrieve/password")->withSuccess("A password reset link has been sent to your email address");
 	}
 	else
 	{
@@ -749,6 +754,8 @@ if ($json_response['response_code'] == '20000'){
 
 	$funding = $simplePay->funding;
 	$object = $simplePay->object;
+
+
 
 	// add to simple pay table
 	/*$host = "localhost";
