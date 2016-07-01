@@ -414,33 +414,92 @@ Route::get("retrieve/password",function(){
 	return View::make("trav.retrieve_password");
 });
 
+
+Route::get("retrieve/password/{reset_code}",function($reset_code){
+	$password_reset_code = $reset_code;
+
+	$user = User::wherePasswordResetCode($password_reset_code)->first();
+
+	if($user != "")
+	{
+		return View::make("trav.password_reset")->with("code",$password_reset_code);
+	}
+	else{
+		return Redirect::to("/retrieve/password")->withError(" Reset Link has expired or invalid ");
+	}
+
+
+});
+
+Route::post("/reset/password",function(){
+
+
+	$rules = array("new_password"=>"required|min:5",
+								 "confirm_new_password"=>"required|min:5|same:new_password"
+							);
+
+	$validator = Validator::make(Input::all(),$rules);
+
+	if($validator->fails())
+	{
+		return Redirect::back()->withErrors($validator);
+	}
+	else{
+		$password_reset_code = Input::get("code");
+		$new_password = Input::get("new_password");
+
+		$user = User::wherePasswordResetCode($password_reset_code)->first();
+		$user->password = Hash::make($new_password);
+		$user->password_reset_code = "";
+		$user->save();
+
+		return Redirect::to("/login")->withSuccess("Password Reset Successful! Login to your account to continue");
+		//return $user;
+
+	}
+
+});
+
 Route::post("/retrieve/password",function(){
 	$email = Input::get("emailAddress");
 
 	$user = User::whereEmailaddress($email)->first();
 	if($user != "")
 	{
+		$alphabets = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+
+			$t_min = 1111;
+			$t_max = 9999;
+			$t_alpha_1 = $alphabets[rand(0,25)];
+			$t_alpha_2 = $alphabets[rand(0,25)];
+			$t_alpha_3 = $alphabets[rand(0,25)];
+			$t_alpha_4 = $alphabets[rand(0,25)];
+			$t_random_num = rand($t_min,$t_max);
+			$reset_code = $t_alpha_4.$t_alpha_3.$t_random_num.$t_alpha_1.$t_alpha_2;
+
 			$token = $user->remember_token;
-			$user->password_reset_code = md5($token);
+			$user->password_reset_code = $token.md5($token).$reset_code;
+			//add password reset code to db
+			$user->save();
 
-
-		  $emailAddress = $user->emailAddress
+		  $emailAddress = $user->emailAddress;
 			$fullName = $user->fullName;
-			$password_reset_code = md5($token);
+			$password_reset_code = $user->password_reset_code;
 			$data = array("token"=>$token,"fullName"=>$fullName,"password_reset_code"=>$password_reset_code);
 		  //send email
 			Mail::pretend('emails.password_reset',$data,function($message){
 					$message->to($emailAddress,$fullName)->subject("Trav Password Reset");
 			});
 
-			return "http://lar-imraj.rhcloud.com/".$token.md5($token);
-			//return Redirect::to("/retrieve/password")->withSuccess("A password reset link has been sent to your email address");
+			//return "http://trav.dev:90/retrieve/password/".$password_reset_code;
+			return Redirect::to("/retrieve/password")->withSuccess("A password reset link has been sent to your email address");
 	}
 	else
 	{
 		return Redirect::to("/retrieve/password")->withError("This User does not exist. Click <a href='/register'>here</a> to create an account");
 	}
 });
+
 
 Route::get("/admin/users",function(){
 	$users = User::all();
@@ -495,15 +554,15 @@ Route::get("/about",function(){
 	return View::make("trav.about");
 });
 
-Route::get("/profile",function(){
+Route::get("/profile",array("before"=>"auth",function(){
 	$user = Auth::user();
 
 	return View::make("trav.profile")->with("user",$user);
-});
+}));
 
-Route::get("/edit_email",function(){
+Route::get("/edit_email",array("before"=>"auth",function(){
 	return View::make("trav.new_email_address");
-});
+}));
 
 Route::post("/update_email",function(){
 	$user_email = Auth::user()->email;
@@ -520,9 +579,9 @@ Route::post("/update_email",function(){
 	$user->save();
 });
 
-Route::get("/edit_phoneNo",function(){
+Route::get("/edit_phoneNo",array("before"=>"auth",function(){
 	return View::make("trav.new_phone_number");
-});
+}));
 
 Route::post("/update_phoneNo",function(){
 	$userPhoneNo = Auth::user()->phoneNumber;
@@ -543,9 +602,9 @@ Route::post("/update_phoneNo",function(){
 	}
 });
 
-Route::get("/edit_password",function(){
+Route::get("/edit_password",array("before"=>"auth",function(){
 	return View::make("trav.new_password");
-});
+}));
 
 Route::post("/update_password",function(){
 

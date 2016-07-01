@@ -54,15 +54,10 @@ return array(
 
 		'mysql' => array(
 			'driver'    => 'mysql',
-			//'host'      => 'localhost',//'br-cdbr-azure-south-b.cloudapp.net',//'localhost',
-			//'database'  => 'trav',//'travu',//'trav',
-			//'username'  => 'root',//'bc8cdee05b618f',//'root',
-			//'password'  => '',//'c786b9c2',//'',
-			'host'      => env('DB_HOST', env('OPENSHIFT_MYSQL_DB_HOST', 'localhost')),
-            'port'      => env('DB_PORT', env('OPENSHIFT_MYSQL_DB_PORT', 3306)),
-            'database'  => env('DB_DATABASE', env('OPENSHIFT_APP_NAME', 'trav')),
-            'username'  => env('DB_USERNAME', env('OPENSHIFT_MYSQL_DB_USERNAME', 'root')),
-            'password'  => env('DB_PASSWORD', env('OPENSHIFT_MYSQL_DB_PASSWORD', '')),
+			'host'      => 'localhost',
+			'database'  => 'trav',
+			'username'  => 'root',
+			'password'  => '',
 
 			'charset'   => 'utf8',
 			'collation' => 'utf8_unicode_ci',
