@@ -379,31 +379,24 @@ Route::get("/result/{id}/book",array("before"=>"auth",function($id){
 	$transaction->save();
  //Ends Saving Transaction History
 
-		//return $query."|".$id;
 	return View::make("trav.book")->with("result",$result);
 }));
 
-//View Tickets, History, Activities, Incomplete, Complete Transaction
-Route::get("transactions",function(){
-
-	$trans = Transaction::where('transaction_type','like','Pay');
-
-	return View::make("trav.transactions")->with("trans",$trans);
-	//return "All Transactions";
-});
 
 //All Tickets Purchased
 Route::get("tickets",function(){
-
-		//$tickets = Transaction::where();
-		return View::make("trav.tickets");//->with("tickets",$tickets);
+		$userId = Auth::user()->id;
+		$tickets = Ticket::whereUserid($userId)->get();
+		return View::make("trav.tickets")->with("tickets",$tickets);
 		//return "All Tickets";
 });
 
 //View Individual Ticket
 Route::get("ticket/{id}",function($id){
 		//return View::make("trav.ticket");
-		return "Ticket #".$id;
+		$ticket = Ticket::whereId($id)->get();
+		return View::make("trav.ticket")->with("ticket",$ticket);
+		//return "Ticket #".$id;
 });
 
 Route::get("notifications",function(){
@@ -528,7 +521,7 @@ Route::get("/result/{id}/pay",function($id){
 	$dropoff_location = PKLocation::whereId($dropoff_location_id)->first();
 	$pickup_location = PKLocation::whereId($pickup_location_id)->first();
 
-	//return $agency['name'];
+
 	$tplan = array("agency_name" => $agency["name"],
 	               "location"=>$location["name"],
 								 "destination"=>$destination["name"],
@@ -814,17 +807,44 @@ if ($json_response['response_code'] == '20000'){
 	$funding = $simplePay->funding;
 	$object = $simplePay->object;
 
+	$ticket = Ticket::create([
+		"location"=>$location,
+		"destination"=>$destination,
+		"transaction_id"=>$transaction_id,
+		"email_address"=>$email_address,
+		"phone_number"=>$phone_number,
+		"price"=>$price,
+		"fullname"=>$fullname,
+		"agency"=>$agency,
+		"id"=>$id
+	]);
 
+	$tb_simple_pay = SimplePay::create([
+		"created"=>$created,
+		"captured"=>$captured,
+		"id"=>$id,
+		"customer_address_postal"=>$customer_address_postal,
+		"customer_phone_number"=>$customer_phone_number,
+		"customer_address"=>$customer_address,
+		"customer_address_city"=>$customer_address_city,
+		"customer_email_address"=>$customer_email_address,
+		"customer_id"=>$customer_id,
+		"customer_address_country"=>$customer_address_country,
+		"customer_address_state"=>$customer_address_state,
+		"payment_reference"=>$payment_reference,
+		"currency"=>$currency,
+		"response_code"=>$response_code,
+		"source_exp_year"=>$source_exp_year,
+		"source_exp_month"=>$source_exp_month,
+		"source_id"=>$source_id,
+		"source_last4"=>$source_last4,
+		"source_brand"=>$source_brand,
+		"source_is_recurrent"=>$source_is_recurrent
+	]);
 
 	// add to simple pay table
-	/*$host = "localhost";
-	$db = "trav";
-	$user = "root";
-	$pwd = "";
-	mysql_connect($host,$user,$pwd);
-	mysql_select_db($db);
 
-
+	/*
 	$ticket_query = mysql_query("INSERT INTO tickets(location,destination,transaction_id,email_address,phone_number,price,fullname,agency,simplepay_id)
 															 VALUES('".$location."','".$destination."','".$transaction_id."','".$email_address."','".$phone_number."','".$price."',
 																				 '".$fullname."','".$agency."','".$id."') ");

@@ -20,11 +20,12 @@
         <div class="form-group">
             {{Form::password("password",array("class"=>"form-control","required"=>true,"placeholder"=>"Enter Your Password"))}}
         </div>
-
+        <div class="form-group">
+          {{Form::password("confirm_password",array("class"=>"form-control","required"=>true,"placeholder"=>"Enter Your Password Again"))}}
+        </div>
         <div class="form-group">
              Clicking on the register button means you hereby agree to Trav's terms and conditions
         </div>
-
         <div class="form-group">
             {{Form::submit("Create My Account",array("class"=>"btn btn-success btn-md col-xs-12") )}}
         </div>

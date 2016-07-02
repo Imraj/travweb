@@ -109,15 +109,15 @@
 
                 <!-- Date Picker Ends -->
             </div>
-            <div class="col-xs-12 col-md-1">
+            <!--<div class="col-xs-12 col-md-1">
                 <label>Seats</label>
                 <select class="form-control" name="pax">
                     <option>1</option>
 
                 </select>
-            </div>
-            <div class="col-xs-12 col-md-3" style="margin-top:1.7em;">
-              {{Form::submit("Search",array("id"=>"find","class"=>"btn btn-success col-xs-12 col-md-3" ))}}
+            </div>-->
+            <div class="col-xs-12 col-md-4" style="margin-top:1.7em;">
+              {{Form::submit("Search",array("id"=>"find","class"=>"btn btn-success col-xs-12 col-md-4" ))}}
             </div>
           </div>
         </div>
