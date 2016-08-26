@@ -29,12 +29,12 @@ VAGAS SLIDESHOW SCRIPTS
 ======================================*/
 $.vegas('slideshow', {
 backgrounds: [
-{ src: 'http://trav.dev:90/assets/img/1.jpg', fade: 1000, delay: 9000 },
+{ src: 'http://trav.dev/assets/img/1.jpg', fade: 1000, delay: 9000 },
 
 ]
 })('overlay', {
 /** SLIDESHOW OVERLAY IMAGE **/
-src: 'http://trav.dev:90/assets/js/vegas/overlays/06.png' // THERE ARE TOTAL 01 TO 15 .png IMAGES AT THE PATH GIVEN, WHICH YOU CAN USE HERE
+src: 'http://trav.dev/assets/js/vegas/overlays/06.png' // THERE ARE TOTAL 01 TO 15 .png IMAGES AT THE PATH GIVEN, WHICH YOU CAN USE HERE
 });
 
 

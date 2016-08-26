@@ -12,7 +12,7 @@ class CreateTodoTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create("Todos",function($table){
+		Schema::create("todos",function($table){
 				$table->increments('id');
 				$table->string('task');
 				$table->timestamps();

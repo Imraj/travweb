@@ -1,57 +1,22 @@
-@extends('master')
+@extends('temp')
 
 @section("content")
   <div class="col-xs-12 col-md-12 col-lg-12">
-      <div class="col-xs-6 col-md-6 col-lg-6">
-        <div class="services-wrapper">
-          <div style="font-size:25px;"><b>T.G.M</b></div>
-          <div><b>Transaction Id : ##############</b></div>
-          <br/>
-          <div><b>Ticket Id : ##############</b></div>
-          <br/>
-          <div><b>From </b> : Ogbomoso </div>
-          <br/>
-          <div><b>To</b> : Port-Harcourt</div>
-          <br/>
-          <div><b>Travel Date</b> : May 21,2016</div>
-          <br/>
-          <div><b>Ticket Purchase On</b> : May 19,2016</div>
-        </div>
-      </div>
+      
 
-      <div class="col-xs-6 col-md-6 col-lg-6">
-        <div class="services-wrapper">
-          <div style="font-size:25px;"><b>ABC Transport</b></div>
-          <div><b>Transaction Id : ##############</b></div>
-          <br/>
-          <div><b>Ticket Id : ##############</b></div>
-          <br/>
-          <div><b>From </b> : Ogbomoso </div>
-          <br/>
-          <div><b>To</b> : Port-Harcourt</div>
-          <br/>
-          <div><b>Travel Date</b> : May 21,2016</div>
-          <br/>
-          <div><b>Ticket Purchase On</b> : May 19,2016</div>
-        </div>
-      </div>
+      @foreach($tickets as $ticket)
+        <div class="col-xs-6 col-md-6 col-lg-6">
+          <div class="services-wrapper">
+              <div>{{$ticket["agency"]}}</div>
+              <div>{{$ticket["transactionId"]}} | {{$ticket["simplePayId"]}}</div>
+              <div>From : {{ $ticket["location"] }}</div>
+              <div>To : {{  $ticket["destination"] }}</div>
+              <div>{{$ticket["token"]}}</div>
+              <a href="{{ url('ticket/'.$ticket['token']) }}">View</a>
+         </div>
+       </div>
 
-      <div class="col-xs-6 col-md-6 col-lg-6">
-        <div class="services-wrapper">
-          <div style="font-size:25px;"><b>T.G.M</b></div>
-          <div><b>Transaction Id : ##############</b></div>
-          <br/>
-          <div><b>Ticket Id : ##############</b></div>
-          <br/>
-          <div><b>From </b> : Ogbomoso </div>
-          <br/>
-          <div><b>To</b> : Port-Harcourt</div>
-          <br/>
-          <div><b>Travel Date</b> : May 21,2016</div>
-          <br/>
-          <div><b>Ticket Purchase On</b> : May 19,2016</div>
-        </div>
-      </div>
+      @endforeach
 
       
 

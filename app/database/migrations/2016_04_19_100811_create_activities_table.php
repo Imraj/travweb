@@ -12,7 +12,7 @@ class CreateActivitiesTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create("Activities",function($table){
+		Schema::create("activities",function($table){
 			$table->increments("Id");
 			$table->text("details");
 			$table->string("type");

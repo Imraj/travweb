@@ -23,8 +23,9 @@
   <link href="{{ asset('assets/admin/css/icheck/flat/green.css') }}" rel="stylesheet" />
   <link href="{{ asset('assets/admin/css/floatexamples.css') }}" rel="stylesheet" type="text/css" />
 
+  
+  <link href="{{ asset('assets/css/jquery-ui.min.css') }}" rel="stylesheet" />
   <link href="{{ asset('assets/css/fuelux.min.css') }}" rel="stylesheet">
-
 
 </head>
 
@@ -86,7 +87,7 @@
                           <li><a href="{{ url('/admin/place/create') }}">Add New</a></li>
                       </ul>
                 </li>
-                <li><a> PickUp Locations <span class="fa fa-chevron-down"></span></a>
+                <li><a> PickUp/Dropoff Locations <span class="fa fa-chevron-down"></span></a>
                       <ul class="nav child_menu" style="display: none">
                           <li><a href="{{ url('/admin/pklocation') }}">View All</a></li>
                           <li><a href="{{ url('/admin/pklocation/create') }}">Add New</a></li>
@@ -111,14 +112,13 @@
                 </li>
                 <li><a> Users <span class="fa fa-chevron-down"></span></a>
                       <ul class="nav child_menu" style="display: none">
-                          <li><a href="/admin/users">View All</a></li>
+                          <li><a href="{{ url('/admin/users') }}">View All</a></li>
 
                       </ul>
                 </li>
                 <li><a> Tickets <span class="fa fa-chevron-down"></span></a>
                       <ul class="nav child_menu" style="display: none">
-                          <li><a href="">View All</a></li>
-
+                          <li><a href="{{ url('/admin/tickets') }}">View All</a></li>
                       </ul>
                 </li>
                 <li><a> Payments <span class="fa fa-chevron-down"></span></a>
@@ -170,12 +170,9 @@
                                         <img src="{{ asset('assets/admin/images/img.jpg') }}" alt="Profile Image" />
                                     </span>
                       <span>
-                                        <span>John Smith</span>
-                      <span class="time">3 mins ago</span>
+                                        
                       </span>
-                      <span class="message">
-                                        Film festivals used to be do-or-die moments for movie makers. They were where...
-                                    </span>
+                      
                     </a>
                   </li>
 
@@ -221,6 +218,7 @@
   <script src="{{ asset('assets/admin/js/nprogress.js') }}"></script>
 
   <script src="{{ asset('assets/admin/js/bootstrap.min.js') }}"></script>
+  <script src="{{ asset('assets/js/jquery-ui.min.js') }}"></script>
   <script src="{{ asset('assets/js/fuelux.min.js') }}"></script>
   <script src="{{ asset('assets/admin/js/custom.js') }}"></script>
   <script>

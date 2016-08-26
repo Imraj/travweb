@@ -43,7 +43,7 @@ class CreateAgenciesBookingsTable extends Migration {
         });
 
 				//Table Pick Up Locations
-        Schema::create('PKLocations',function($table){
+        Schema::create('pklocations',function($table){
             $table->increments('id');
             $table->integer('agency_id')->references('id')->on("agencies");
             $table->text('location_name');

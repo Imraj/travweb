@@ -1,7 +1,7 @@
-@extends('master')
+@extends('temp')
 
 @section('content')
-  <div class="container" style="margin-top:10em;">
+  <div class="container" >
 
 
         {{Form::open(array())}}

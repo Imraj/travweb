@@ -1,169 +1,265 @@
 <!DOCTYPE html>
-<html lang="en" class="no-js" >
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->  
+<!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->  
+<!--[if !IE]><!--> <html lang="en"> <!--<![endif]-->  
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<meta name="description" content="" />
-<meta name="author" content="" />
-<!--[if IE]>
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<![endif]-->
-<title>Trav</title>
-<!-- BOOTSTRAP CORE CSS -->
+    <title>Trav</title>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">    
+    <link rel="shortcut icon" href="favicon.ico">  
+    <link href='http://fonts.googleapis.com/css?family=Lato:300,400,300italic,400italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'> 
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/plugins/bootstrap/css/bootstrap.css') }}">
+    <!-- Plugins CSS -->    
+    <link rel="stylesheet" href="{{ asset('assets/plugins/font-awesome/css/font-awesome.css') }}">
+    <link href="{{ asset('assets/css/ionicons.css') }}" rel="stylesheet" />
 
-<link href="{{ asset('assets/css/bootstrap.css') }}" rel="stylesheet" />
-<!-- ION ICONS STYLES -->
-<link href="{{ asset('assets/css/ionicons.css') }}" rel="stylesheet" />
-<!-- FONT AWESOME ICONS STYLES -->
-<link href="{{ asset('assets/css/font-awesome.css') }}" rel="stylesheet" />
-<!-- FANCYBOX POPUP STYLES -->
-<link href="{{ asset('assets/js/source/jquery.fancybox.css') }}" rel="stylesheet" />
+    <!-- Theme CSS -->  
+    <link id="theme-style" rel="stylesheet" href="{{ asset('assets/css/styles.css') }}">
+     <link href="{{ asset('assets/css/jquery-ui.min.css') }}" rel="stylesheet"/>
+    <link href="{{ asset('assets/css/fuelux.min.css') }}" rel="stylesheet"/>
+   
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head> 
 
-<!-- CUSTOM CSS -->
-<link href="{{ asset('assets/css/style-green.css') }}" rel="stylesheet" />
-<link href="{{ asset('assets/css/fuelux.min.css') }}" rel="stylesheet" />
-<link href="{{ asset('assets/css/jquery-ui.min.css') }}" rel="stylesheet" />
-<link href="{{ asset('assets/css/index-view.css') }}" rel="stylesheet" />
-<!--<link href="//www.fuelcdn.com/fuelux/3.4.0/css/fuelux.min.css" rel="stylesheet">-->
-<!-- HTML5 Shiv and Respond.js for IE8 support of HTML5 elements and media queries -->
-<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-<!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-<![endif]-->
+<body data-spy="scroll">
+    
+    <!-- ******HEADER****** --> 
+    <header id="header" class="header">  
+        <div class="container">            
+            <h1 class="logo pull-left">
+                <a class="scrollto" href="#promo">
+                    <span class="logo-title">Trav</span>
+                </a>
+            </h1><!--//logo-->              
+            <nav id="main-nav" class="main-nav navbar-right" role="navigation">
+                <div class="navbar-header">
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button><!--//nav-toggle-->
+                </div><!--//navbar-header-->            
+                <div class="navbar-collapse collapse" id="navbar-collapse" >
+                    <ul class="nav navbar-nav" >
+                       
+                        <li class="nav-item" ><a style="color:white;" href="{{ url('/') }}">Home</a></li>
+                        @if(Auth::check())
+                            <li class="nav-item"><a style="color:white;" href="{{ url('/profile')}}">My Profile</a></li>
+                            <li class="nav-item"><a style="color:white;" href="{{ url('/tickets') }}">Tickets</a></li>
+                            <li class="nav-item">{{ link_to("logout","Log Out") }}</li>
+                        @else
+                            <li class="nav-item"><a style="color:white;" href="{{ url('/register') }}">Register</a></li>
+                            <li class="nav-item"><a style="color:white;" href="{{ url('/login') }}">Sign In</a></li>
+                        @endif
+                        <li class="nav-item"><a style="color:white;" href="{{ url('/contact') }}">Contact</a></li>
+                    </ul><!--//nav-->
+                </div><!--//navabr-collapse-->
+            </nav><!--//main-nav-->
+        </div>
+    </header><!--//header-->
+    
+    <!-- ******PROMO****** -->
+    <section id="promo" class="promo section offset-header" >
+        <div class="container text-center" >
+            
+            <!------------------------------------------------------------------------>
+                <div class="col-xs-12 col-md-12">
+                    @if(Session::has("error"))
+                      <div class="alert alert-warning">
+                        {{Session::get("error")}}
+                      </div>
+                    @endif
 
-    <!--<script src="http://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>-->
-</head>
-<body data-spy="scroll" data-target="#menu-section">
-<!--MENU SECTION START-->
-<div class="navbar navbar-inverse navbar-fixed-top scroll-me" id="menu-section" >
-	<div class="container">
-		<div class="navbar-header">
-			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
-			<a class="navbar-brand" href="{{ url("/") }}">Trav</a>
-		</div>
-		<div class="navbar-collapse collapse">
-			<ul class="nav navbar-nav navbar-right">
+                    @if(Session::has("success"))
+                        <div class="alert alert-success">
+                            {{Session::get("success")}}
+                        </div>
+                    @endif
 
-				<li><a href="{{ url('/') }}">Home</a></li>
+                    @yield('content')
+                    <ul class="meta list-inline">
+                        <li><a href="" target="_blank"></a></li>
+                        <li><a href= target="_blank"></a></li>
+                         <li><a href="" target="_blank"></a></li>
+                    </ul><!--//meta-->
+                </div>      
+            <!------------------------------------------------------------------------->
 
+            <ul class="meta list-inline">
+                <li><a href="" target="_blank"></a></li>
+                <li><a href= target="_blank"></a></li>
+                <li><a href="" target="_blank"></a></li>
+            </ul><!--//meta-->
+        </div><!--//container-->
+        
+    </section><!--//promo-->
+    
+    <!-- ******ABOUT****** --> 
+    <section id="about" class="about section">
+        <div class="container">
+            <h2 class="title text-center">Why Trav?</h2>
+            
+            <div class="row">
+                
+                <div class="item col-md-4 col-sm-6 col-xs-12">
+                    <div class="icon-holder">
+                        <i class="fa fa-heart"></i>
+                    </div>
+                    <div class="content">
+                        <h3 class="sub-title">Better Experience</h3>
+                        <p>We create a better travelling experience right from the moment you made up your mind to travel.</p>
+                    </div><!--//content-->
+                </div><!--//item-->
+                <div class="item col-md-4 col-sm-6 col-xs-12">
+                    <div class="icon-holder">
+                        <i class="fa fa-clock-o"></i>
+                    </div>
+                    <div class="content">
+                        <h3 class="sub-title">Time saver</h3>
+                        <p>You don't have to queue up to book your ticket for you can now book anywhere anytime.</p>
+                    </div><!--//content-->
+                </div><!--//item-->
+                <div class="item col-md-4 col-sm-6 col-xs-12">
+                    <div class="icon-holder">
+                        <i class="fa fa-crosshairs"></i>
+                    </div>
+                    <div class="content">
+                        <h3 class="sub-title">Lot of options</h3>
+                        <p>We give you lot of options to explore.</p>
+                    </div><!--//content-->
+                </div><!--//item-->           
+                
+            </div><!--//row-->            
+        </div><!--//container-->
+    </section><!--//about-->
+    
+    <!-- ******FEATURES****** --> 
+    <section id="features" class="features section">
+        <div class="container text-center">
+           
+            <div class="col-xs-12 col-md-12">
+                <div class="col-xs-2 col-md-2"></div>
+                <div class="col-xs-4 col-md-4">
+                    <img class="img-responsive" width="200" src="{{ asset('assets/img/badge.png') }}" alt="" />
+                </div>
+                <div class="author-message pull-right col-xs-6 col-md-6">                      
+                    <div class="profile">
+                        <img class="img-responsive" src="{{ asset('assets/img/wand.png') }}" alt="" />
+                       
+                    </div>
+                                          
+                </div>
+            
+            </div><!--//container-->
+    </section><!--//features-->
+    
+    <!-- ******DOCS****** --> 
+    <section id="docs" class="about section">
+        <div class="container">
+            <div class="docs-inner">
+            <h2 class="title text-center">Our Partners</h2>            
+            <div class="author-message" style="align:center;">                      
+                    <img class="img-responsive" src="{{ asset('assets/img/pay_mobile.png') }}" />
+            </div>
+            
+            
+            </div><!--//docs-inner-->         
+        </div><!--//container-->
+    </section><!--//features-->
+    
+    <!-- ******LICENSE****** --> 
+   
+    
+    <!-- ******CONTACT****** --> 
+<section id="contact" class="" style="margin:1em;padding:1em;">
+        <div class="container">
+            <div class="contact-inner">
+                <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4" >
+                    <ul class="meta" style="list-style:none">
+                        <li><a href="">Book a ticket</a></li>
+                        <li> <a hef="">Download </a></li>
+                        <li> <a hef="">Feedback or Suggestion</a></li>
+                        
+                    </ul>
+                  
+                   
+                </div>
 
-        @if(Auth::check())
-        <!-- <li><a href="#">Logged In as {{ Auth::user()->fullName }}</a></li>-->
-				<!--<li><a href="{{ url('/transactions') }}">Transactions</a></li>
-				  History/Ticket/Bookings-->
-				<li><a href="{{ url('/profile')}}">My Profile</a></li>
-				<li><a href="{{ url('/tickets') }}">Tickets</a></li>
-				<li>{{ link_to("logout","Log Out") }}</li>
-        @else
-				<li><a href="{{ url('/register') }}">Register</a></li>
-				<li><a href="{{ url('/login') }}">Sign In</a></li>
-        @endif
-				<li><a href="{{ url('/contact') }}">Contact</a></li>
-				<div></div>
-				<li>
-          <a href="#">
-            <strong><i class="glyphicon glyphicon-phone"></i></strong> : 0903 344 9024</a>
-        </li>
+                <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
+                     <ul style="list-style:none">
+                         <li><a href="">FAQs</a></li>
+                         <li><a href="">Refund Policy</a></li>
+                         <li><a href="">Terms and Condition</a></li>
+                    </ul>
+                </div>
 
-			</ul>
+                <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3">
+                    <ul class="meta" style="list-style:none">
+                       <li><a href="">Contact us</a></li>
+                        <li> <a hef="">About us</a></li>
+                        
+                    </ul>
+                </div>
 
-		</div>
-	</div>
-</div>
-<!--MENU SECTION END-->
-
-<!--HOME SECTION START-->
-<div id="home" >
-   <div id="services" >
-      <div class="container">
-				<div class="row">
-					<div class="col-xs-12 col-md-12">
-        @if(Session::has("error"))
-          <div class="alert alert-warning">
-            {{Session::get("error")}}
-          </div>
-        @endif
-
-				@if(Session::has("success"))
-					<div class="alert alert-success">
-							{{Session::get("success")}}
-					</div>
-				@endif
-
-	       @yield('content')
-
-
-			 	</div>
-			 </div>
-      </div>
-   </div>
-</div>
-<!--HOME SECTION END-->
-
-
-<!-- JAVASCRIPT FILES PLACED AT THE BOTTOM TO REDUCE THE LOADING TIME -->
-<!-- CORE JQUERY -->
-
-<script src="{{ asset('assets/js/jquery-1.11.1.js') }}"></script>
-<!-- BOOTSTRAP SCRIPTS -->
-<script src="{{ asset('assets/js/bootstrap.js') }}"></script>
-<!-- EASING SCROLL SCRIPTS PLUGIN -->
-<script src="{{ asset('assets/js/vegas/jquery.vegas.min.js') }}"></script>
-<!-- VEGAS SLIDESHOW SCRIPTS -->
-<!--<script src="{{ asset('assets/js/jquery.easing.min.js') }}"></script>-->
-<!-- FANCYBOX PLUGIN -->
-<script src="{{ asset('assets/js/source/jquery.fancybox.js')}}"></script>
-<!-- ISOTOPE SCRIPTS -->
-<script src="{{ asset('assets/js/jquery.isotope.js') }}"></script>
-<!-- VIEWPORT ANIMATION SCRIPTS   -->
-<!--<script src="{{ asset('assets/js/appear.min.js') }}"></script>
-<script src="{{ asset('assets/js/animations.min.js') }}"></script>-->
-<!-- CUSTOM SCRIPTS -->
-<script src="{{ asset('assets/js/custom.js') }}"></script>
-
-
-<script src="{{ asset('assets/js/jquery-ui.min.js') }}"></script>
-<!--<script src="//www.fuelcdn.com/fuelux/3.4.0/js/fuelux.min.js"></script>-->
-<script src="{{ asset('assets/js/fuelux.min.js') }}"></script>
-
-
-<script>
-	$(document).ready(function(){
-		$('#myDatepicker').datepicker({
-				allowPastDates: false
-		});
-	})
-
-</script>
-<script>
-	$(function(){
-		$("#geocomplete1").autocomplete({
-			source:"/search/autocomplete",
-			minLength:1,
-			select:function(event,ui){
-				$("#geocomplete1").val(ui.item.value);
-			}
-		});
-	});
-</script>
-<script>
-	$(function(){
-		$("#geocomplete2").autocomplete({
-			source:"/search/autocomplete",
-			minLength:1,
-			select:function(event,ui){
-				$("#geocomplete2").val(ui.item.value);
-			}
-		});
-	});
-</script>
-
+            </div><!--//contact-inner-->
+        </div><!--//container-->
+    </section><!--//contact-->  
+      
+    <!-- ******FOOTER****** --> 
+    <footer class="footer">
+        <img src="{{ asset('assets/img/powered_horizontal_dark.png')}}"/>
+    </footer><!--//footer-->
+     
+    <!-- Javascript -->          
+    <script type="text/javascript" src="{{asset('assets/plugins/jquery-1.11.3.min.js')}}"></script>   
+    <script type="text/javascript" src="{{asset('assets/plugins/jquery.easing.1.3.js')}}"></script>   
+    <script type="text/javascript" src="{{asset('assets/plugins/bootstrap/js/bootstrap.min.js')}}"></script>     
+    <script type="text/javascript" src="{{asset('assets/plugins/jquery-scrollTo/jquery.scrollTo.min.js')}}"></script>
+    <script type="text/javascript" src="{{asset('assets/js/main.js')}}"></script>    
+    <script type="text/javascript" src="{{asset('assets/js/jquery-ui.min.js')}}"></script>      
+    <script type="text/javascript" src="{{asset('assets/js/fuelux.min.js')}}"></script> 
+    
+     <script>
+        $(document).ready(function(){
+            $('#myDatepicker').datepicker({
+                    allowPastDates: false
+            });
+        })
+   </script>  
+   
+    <script>
+        $(function(){
+            $("#geocomplete1").autocomplete({
+                source:"/search/autocomplete",
+                minLength:1,
+                select:function(event,ui){
+                    $("#geocomplete1").val(ui.item.value);
+                }
+            });
+        });
+    </script>
+    <script>
+        $(function(){
+            $("#geocomplete2").autocomplete({
+                source:"/search/autocomplete",
+                minLength:1,
+                select:function(event,ui){
+                    $("#geocomplete2").val(ui.item.value);
+                }
+            });
+        });
+    </script>
 </body>
+</html> 
 
-</html>

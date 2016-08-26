@@ -27,7 +27,8 @@
         <th>Price</th>
         <th>TakeOff point</th>
         <th>Dropoff point</th>
-        <th>TakeOff DateTime</th>
+        <th>TakeOff Date</th>
+        <th>TakeOff Time</th>
       </thead>
       <tbody>
         @foreach($all_tplans as $tplan)
@@ -39,7 +40,8 @@
             <td>{{ $tplan['price'] }}</td>
             <td>{{ $tplan['pickup_location_name']}}, {{ $tplan['pickup_location_address']}}</td>
             <td>{{ $tplan['dropoff_location_name']}}, {{ $tplan['dropoff_location_address']}}</td>
-            <td>{{ $tplan['pickup_datetime'] }}</td>
+            <td>{{ $tplan['pickup_date'] }}</td>
+            <td>{{ $tplan["pickup_time"]}}</td>
             <td>
                 <a href="/admin/travelplan/{{$tplan['id']}}/edit" class="btn btn-primary btn-sm">Edit</a>
             </td>

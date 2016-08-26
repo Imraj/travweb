@@ -24,8 +24,10 @@ class AddCreatedAtToTransactions extends Migration {
 	 */
 	public function down()
 	{
-		Schema::dropColumn("created_at");
-		Schema::dropColumn("updated_at");
+		Schema::table("transactions",function($table){
+			$table->dropColumn("created_at");
+			$table->dropColumn("updated_at");
+		});
 	}
 
 }

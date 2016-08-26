@@ -14,7 +14,7 @@ class AddDropoffLocationToTravelplans extends Migration {
 	{
 		Schema::table("travelplans",function($table){
 			$table->integer("dropoff_location")->references("id")->on("pklocations");
-			$table->integer("pickup_location")->references("id")->on("pklocations");
+		
 		});
 	}
 

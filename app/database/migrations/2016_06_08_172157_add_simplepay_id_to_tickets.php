@@ -12,7 +12,7 @@ class AddSimplepayIdToTickets extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create("Simple_Pay",function($table){
+		Schema::create("simple_pay",function($table){
 			$table->string("created");
 			$table->boolean("captured");
 			$table->string("id");

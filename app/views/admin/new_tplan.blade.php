@@ -44,7 +44,7 @@
                 <div class="datepicker fuelux col-xs-6" id="myDatepicker" >
 
                     <div class="input-group">
-                      <input class="form-control" name="pickup_datetime" placeholder="Date Of Travel" id="myDatepickerInput" type="text"/>
+                      <input class="form-control" name="pickup_date" placeholder="Date Of Travel" id="myDatepickerInput" type="text"/>
                       <div class="input-group-btn">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                           <span class="glyphicon glyphicon-calendar"></span>
@@ -121,6 +121,10 @@
                       </div>
                     </div>
                 </div><!--fuelux-->
+        </div>
+        <div class="form-group">
+            {{Form::label("pickup_time","Time ")}}
+            {{Form::text("pickup_time","",array("class"=>"form-control","placeholder"=>"Time "))}}
         </div>
         <div class="form-group">
           {{Form::label("pickup_location","Pickup location ")}}

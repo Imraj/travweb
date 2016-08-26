@@ -4,6 +4,7 @@
   {
 
     public $fillable = ["agency_id","car_number","car_info"];
+    public $timestamps = [];
 
     public function Agency()
     {

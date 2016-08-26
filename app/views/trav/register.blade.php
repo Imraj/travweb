@@ -1,12 +1,19 @@
-@extends('master')
+@extends('temp')
 
 
 
 @section('content')
 
-<div class="row animate-in" style="margin-top:7em;" data-anim-type="fade-in-up">
-   <div class="col col-xs-3"></div>
-   <div class="col col-xs-6">
+<div class="row animate-in" style="margin-top:4em;" data-anim-type="fade-in-up">
+   <div class="col-md-3 col-lg-3 col-xs-0 col-sm-0"></div>
+   <div class="col col-xs-12 col-sm-12 col-md-6 col-lg-6">
+        @if ($errors->has())
+        <div class="alert alert-warning">
+            @foreach($errors->all() as $error )
+                {{$error}}<br/>
+            @endforeach
+        </div>
+        @endif
     {{Form::open()}}
         <div class="form-group">
             {{Form::text("fullName","",array("class"=>"form-control","required"=>true,"placeholder"=>"Enter Your Full Name"))}}
@@ -28,6 +35,9 @@
         </div>
         <div class="form-group">
             {{Form::submit("Create My Account",array("class"=>"btn btn-success btn-md col-xs-12") )}}
+        </div><br/><br/><br/>
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <a href="{{ url('/login')}}" id="forgotpwd" class="text-center col-md-12">Existing user? Sign In</a>
         </div>
 
     {{Form::close()}}

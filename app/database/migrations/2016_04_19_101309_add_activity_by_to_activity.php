@@ -12,7 +12,7 @@ class AddActivityByToActivity extends Migration {
 	 */
 	public function up()
 	{
-		Schema::table("Activities",function($table){
+		Schema::table("activities",function($table){
 			$table->string("activity_by");
 		});
 	}

@@ -1,4 +1,4 @@
-@extends('master')
+@extends('temp')
 
 @section('content')
 

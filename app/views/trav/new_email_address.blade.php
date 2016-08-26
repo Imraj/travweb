@@ -1,7 +1,7 @@
-@extends('master')
+@extends('temp')
 
 @section('content')
-<div class="row animate-in" data-anim-type="fade-in-up" style="margin-top:7em;">
+<div class="row animate-in" data-anim-type="fade-in-up" style="">
     <div class="col col-xs-3"></div>
     <div class="col-xs-6">
   {{Form::open(array("url"=>"/update_email"))}}

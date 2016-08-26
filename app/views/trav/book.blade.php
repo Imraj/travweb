@@ -1,4 +1,4 @@
-@extends('master')
+@extends('temp')
 
 @section('content')
 
@@ -25,8 +25,8 @@
             </div>
 
             <div class="">
-              <h3>Take Off Date and Time</h3>
-              <p>{{ $result['PickUp_DateTime']}}</p>
+              <h3>Take Off Time</h3>
+              <p>{{ $result['PickUp_Time']}}</p>
             </div>
 
             <div class="row">

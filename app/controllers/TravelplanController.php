@@ -1,5 +1,7 @@
 <?php
 
+use Carbon\Carbon;
+
 class TravelplanController extends \BaseController {
 
 
@@ -33,7 +35,10 @@ class TravelplanController extends \BaseController {
 
 			$price = $tplan ->price;
 
-			$pickup_datetime = $tplan->pickup_datetime;
+			$pickup_date  = $tplan->pickup_date;
+			
+
+			$pickup_time = $tplan->pickup_time;
 
 			$pickup_location_id = $tplan->pickup_location;
 			$pickup_location_name = Pklocation::whereId($pickup_location_id)->first()['location_name'];
@@ -45,7 +50,8 @@ class TravelplanController extends \BaseController {
 
 			$all_tplan = array("id"=>$id,"agency_id"=>$agency_id,"agency_name"=>$agency_name,
 												"location_name"=>$location_name,"destination_name"=>$destination_name,
-												"price"=>$price,"pickup_datetime"=>$pickup_datetime,
+												"price"=>$price,"pickup_date"=>$pickup_date,
+												"pickup_time"=>$pickup_time,
 												"pickup_location_name"=>$pickup_location_name,
 												"pickup_location_address"=>$pickup_location_address,
 												"dropoff_location_name"=>$dropoff_location_name,
@@ -81,7 +87,16 @@ class TravelplanController extends \BaseController {
 		$travelPlan->location_id = Input::get("location_id");
 		$travelPlan->destination_id = Input::get("destination_id");
 		$travelPlan->price = Input::get("price");
-		$travelPlan->pickup_datetime = Input::get("pickup_datetime");
+
+		$pickup_date = Input::get("pickup_date");
+		$travel_date = Carbon::parse($pickup_date);
+		$date_formatted = $travel_date->toFormattedDateString();
+		$travel_date = $travel_date->toDateString();
+		$travelPlan->pickup_date = $travel_date;
+		
+		
+
+		$travelPlan->pickup_time = Input::get("pickup_time");
 		$travelPlan->pickup_location = Input::get("pickup_location");
 		$travelPlan->dropoff_location = Input::get("dropoff_location");
 
@@ -166,7 +181,16 @@ class TravelplanController extends \BaseController {
 	 */
 	public function update($id)
 	{
-		//
+		$travelPlan = Travelplan::whereId($id)->first();
+
+		$travelPlan->agency_id = Input::get("agency_id");
+		$travelPlan->location_id = Input::get("location_id");
+		$travelPlan->destination_id = Input::get("destination_id");
+		$travelPlan->price = Input::get("price");
+		$travelPlan->pickup_date = Input::get("pickup_date");
+		$travelPlan->pickup_time = Input::get("pickup_time");
+		$travelPlan->pickup_location = Input::get("pickup_location");
+		$travelPlan->dropoff_location = Input::get("dropoff_location");
 	}
 
 
@@ -178,8 +202,8 @@ class TravelplanController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
-		//Travelplan::whereId($id)->destroy();
-		return "destroy id";
+		return Travelplan::whereId($id)->first()->destroy();
+		
 	}
 
 

@@ -55,7 +55,7 @@ return array(
 		'mysql' => array(
 			'driver'    => 'mysql',
 			'host'      => 'localhost',
-			'database'  => 'trav',
+			'database'  => 'travcomn',
 			'username'  => 'root',
 			'password'  => '',
 

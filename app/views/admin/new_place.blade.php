@@ -26,6 +26,14 @@
         </div>
 
         <div class="form-group">
+          {{Form::text("longitude","",array("class"=>"form-control","placeholder"=>"Place Longitude"))}}
+        </div>
+
+        <div class="form-group">
+          {{Form::text("latitude","",array("class"=>"form-control","placeholder"=>"Place Latitude"))}}
+        </div>
+
+        <div class="form-group">
 
           {{Form::submit("Add Place",array("class"=>"btn btn-success col-xs-5"))}}
         </div>

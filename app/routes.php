@@ -1,7 +1,11 @@
 <?php
-header("Access-Control-Allow-Origin:*");
+header('Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Origin: *');
+
+header('Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token');
 
 use Carbon\Carbon;
+
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -20,6 +24,14 @@ Route::resource("admin/pklocation","PklocationController");
 Route::resource("admin/place","PlaceController");
 Route::resource("admin/todo","TodoController");
 Route::resource("admin/transaction","TransactionController");
+Route::resource("admin/tickets","TicketController");
+
+
+
+//Route::resource("route","RouteController");
+Route::resource("route/location","RouteController");
+Route::resource("route/direction","DirectionController");
+Route::resource("route/state","StateController");
 
 View::composer(array('admin.new_car'),function($view){
 	$agency = Agency::all();
@@ -32,6 +44,60 @@ View::composer(array('admin.new_car'),function($view){
 		$agency_options = array(null,"unspecified");
 	}
 	$view->with('agency_options',$agency_options);
+});
+
+View::composer(array("route.location.new_place"),function($view){
+	$state = State::all();
+	if(count($state) > 0)
+	{
+		$state_options = array_combine($state->lists('id'), $state->lists('name'));
+	}
+	else
+	{
+		$state_options = array(null,"unspecified");
+	}
+	$view->with("state_options",$state_options);
+});
+
+View::composer(array("route.direction.create"),function($view){
+	$state = State::all();
+	if(count($state) > 0)
+	{
+		$state_options = array_combine($state->lists('id'), $state->lists('name'));
+	}
+	else
+	{
+		$state_options = array(null,"unspecified");
+	}
+	$view->with("state_options",$state_options);
+});
+
+View::composer('route.direction.create',function($view){
+		$location =Place::all();
+		if( count($location) >0)
+		{
+			$location_options = array_combine($location->lists('id'),$location->lists('name') );
+		}
+		else
+		{
+			$location_options = array(null,"unspecified");
+		}
+
+		$view->with("place_options",$location_options);	
+});
+
+View::composer('route.direction.create',function($view){
+		$vehicleType =VehicleType::all();
+		if( count($vehicleType) >0)
+		{
+			$vehicle_options = array_combine($vehicleType->lists('id'),$vehicleType->lists('name') );
+		}
+		else
+		{
+			$vehicle_options = array(null,"unspecified");
+		}
+
+		$view->with("vehicle_options",$vehicle_options);	
 });
 
 View::composer('admin.new_pklocation',function($view){
@@ -94,15 +160,19 @@ View::composer('admin.edit_tplan',function($view){
 				 ->with("pklocation_options",$pklocation_options);
 });
 
+Route::post("simplepay/test",function(){
+	return View::make("trav.simplepay");
+});
+
 Route::get('/admin',array("before"=>"auth",function(){
 		if(Auth::user()->is_admin){
 			$todos = Todo::all();
 			$activities = Activity::all();
 			$agencies = Agency::all();
 			return View::make("admin.index")
-												->with("activities",$activities)
-												->with("todos",$todos)
-												->with("agencies",$agencies);
+							->with("activities",$activities)
+							->with("todos",$todos)
+							->with("agencies",$agencies);
 		}
 		else
 		{
@@ -111,6 +181,17 @@ Route::get('/admin',array("before"=>"auth",function(){
 
 }));
 
+Route::get("privacy-policy",function(){
+
+	return View::make("trav.privacy_policy");
+
+});
+
+Route::get("terms-condition",function(){
+
+	return View::make("trav.terms_condition");
+
+});
 
 Route::get('/', function()
 {
@@ -130,24 +211,92 @@ Route::post('/result',function(){
 		$location_id = Place::where('name','like',$location)->first()["id"];
 		$destination_id = Place::where('name','like',$destination)->first()["id"];
 
-	  $queries = Travelplan::whereLocationId($location_id)->whereDestinationId($destination_id)->wherePickupDatetime($travel_date)->get();
+	  	$queries = Travelplan::whereLocationId($location_id)->whereDestinationId($destination_id)->wherePickupDate($travel_date)->get();
 
-		$travel_date_suggestion = $travel_date_time->addDays(7)->toDateString();
-		$queries_suggestion = Travelplan::whereLocationId($location_id)->whereDestinationId($destination_id)->whereBetween('pickup_datetime',[$travel_date,$travel_date_suggestion])->get();
-
+		//$travel_date_suggestion = $travel_date_time->addDays(7)->toDateString();
+		//$queries_suggestion = Travelplan::whereLocationId($location_id)->whereDestinationId($destination_id)->whereBetween('pickup_date',[$travel_date,$travel_date_suggestion])->get();
+		
+		$queries_suggestion = new \Illuminate\Database\Eloquent\Collection;
 
 		$results = array();
 		$results_suggestion = array();
 
+		//========================================================
+		/*if(count($queries) == 0)
+		{
+           $city = urlencode(Input::get("location"));
+     
+           $url = "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyBL7UcOP2CaVXInuN7iXit1i5iw7EpXkTI&address=$city";
+	       $json_data = file_get_contents($url);
+	       $result = json_decode($json_data, TRUE);
+
+	      
+	
+	        $latitude = urlencode($result['results'][0]['geometry']['location']['lat']);
+	        $longitude = urlencode($result['results'][0]['geometry']['location']['lng']);
+			
+		  
+           $near_url = "http://api.geonames.org/findNearbyPlaceNameJSON?lat=$latitude&lng=$longitude&cities=cities5000&radius=300&username=imraj";
+           $near_url_th = "http://api.geonames.org/findNearbyPlaceNameJSON?lat=$latitude&lng=$longitude&cities=cities1000&radius=300&username=imraj";
+
+	        $json_data = file_get_contents($near_url);
+	        $json_data_th = file_get_contents($near_url_th);
+	
+	       $result = json_decode($json_data, TRUE);
+	        $result_th = json_decode($json_data_th, TRUE);
+
+           $geonames =  $result["geonames"];
+            $geonames_th =  $result_th["geonames"];
+	        foreach($geonames as $geoname)
+	         {
+	               $geoname_location = $geoname["name"];
+	              
+	               $geoname_location_id = Place::where('name','like',$geoname_location)->first()["id"];
+	              
+	               if($geoname_location_id!="")
+	               {
+	               	   $queries_geoname = Travelplan::whereLocationId($geoname_location_id)->whereDestinationId($destination_id)->wherePickupDate($travel_date)->get();
+	           	   	  
+		           	   if(count($queries_geoname) > 0)
+		           	   {
+		           	   	 $queries_suggestion = $queries_suggestion->merge($queries_geoname);	
+		           	   }
+	               }
+	               
+
+	        } 
+
+	        foreach($geonames_th as $geoname_th)
+	        {
+	               $geoname_location_th = $geoname_th["name"];
+	              
+	               $geoname_location_id_th = Place::where('name','like',$geoname_location_th)->first()["id"];
+	               if($geoname_location_id_th!="")
+	               {
+						 $queries_geoname_th = Travelplan::whereLocationId($geoname_location_id_th)->whereDestinationId($destination_id)->wherePickupDate($travel_date)->get();
+			           	 if(count($queries_geoname_th) > 0)
+			           	 {
+			           	    $queries_suggestion = $queries_suggestion->merge($queries_geoname_th);	
+			           	 }
+	               }
+	              
+	        }  
+	       
+	    }
+	    */
+		//=======================================================
+
+
 		foreach($queries as $query)
 		{
 			$id = $query["id"];
-	  	$agency_id=$query['agency_id'];
+	  		$agency_id=$query['agency_id'];
 			$price = $query["price"];
 			$dropoff_location_id = $query["dropoff_location"];
 			$pickup_location_id = $query["pickup_location"];
-			$pickup_datetime = $query["pickup_datetime"];
-			$pickup_datetime = Carbon::parse($pickup_datetime)->toFormattedDateString();
+			$pickup_date = $query["pickup_date"];
+			$pickup_time = $query["pickup_time"];
+			$pickup_date = Carbon::parse($pickup_date)->toFormattedDateString();
 
 
 			$agency = Agency::whereId($agency_id)->first()['name'];
@@ -159,7 +308,8 @@ Route::post('/result',function(){
 									"Agency"=>$agency,
 									"DropOff_Location"=>$dropoff_location,
 									"PickUp_Location"=>$pickup_location,
-									"PickUp_DateTime"=>$pickup_datetime
+									"PickUp_Date"=>$pickup_date,
+									"PickUp_Time"=>$pickup_time
 								);
 
 		 array_push($results,$result);
@@ -171,12 +321,20 @@ Route::post('/result',function(){
 			$id = $query_suggestion["id"];
 			$agency_id=$query_suggestion['agency_id'];
 			$price = $query_suggestion["price"];
+
+			$suggestion_location_id = $query_suggestion["location_id"];
+			$suggestion_destination_id = $query_suggestion["destination_id"];
+
 			$dropoff_location_id = $query_suggestion["dropoff_location"];
 			$pickup_location_id = $query_suggestion["pickup_location"];
-			$pickup_datetime = $query_suggestion["pickup_datetime"];
+			$pickup_date = $query_suggestion["pickup_date"];
+			$pickup_time = $query_suggestion["pickup_time"];
 
-			$pickup_datetime = Carbon::parse($pickup_datetime)->toFormattedDateString();
+			$pickup_date = Carbon::parse($pickup_date)->toFormattedDateString();
 
+			$suggestion_location = Place::whereId($suggestion_location_id)->first()["name"];
+			$suggestion_destination = Place::whereId($suggestion_destination_id)->first()["name"];
+			
 			$agency = Agency::whereId($agency_id)->first()['name'];
 			$dropoff_location = Pklocation::whereId($dropoff_location_id)->first()['location_address'];
 			$pickup_location = Pklocation::whereId($pickup_location_id)->first()['location_address'];
@@ -185,9 +343,12 @@ Route::post('/result',function(){
 			$result_suggestion = array("id"=>$id,
 									"Price"=>$price,
 									"Agency"=>$agency,
+									"suggestion_location"=>$suggestion_location,
+									"suggestion_destination"=>$suggestion_destination,
 									"DropOff_Location"=>$dropoff_location,
 									"PickUp_Location"=>$pickup_location,
-									"PickUp_DateTime"=>$pickup_datetime
+									"pickup_date"=>$pickup_date,
+									"pickup_time"=>$pickup_time
 								);
 						array_push($results_suggestion,$result_suggestion);
 		}
@@ -205,27 +366,10 @@ Route::post('/result',function(){
 														->with("destination",$destination)
 														->with("travelDate",$date_time_formatted)
 														->with("results_suggestion",$results_suggestion);
-
+		
 });
 
-/*Route::get('/activate_phoneNo',function(){
-		return View::make("trav.activate_phoneNo");
-});
 
-Route::post("/activate_phoneNo",function(){
-	$activation_code = Input::get("activation_code");
-	return $activation_code;
-});*/
-
-Route::post("/activated",function(){
-
- $userId = $user->id;
- $activate = DB::table("users")->whereId($userId);
- $user->activated = true;
-
- return Redirect::to("/")->withSuccess("Account Successfully Activated");
-
-});
 
 Route::get('/register',function(){
 		return View::make("trav.register");
@@ -266,12 +410,10 @@ Route::post('/register',function(){
 					$fromFullname = "Mujahid";
 					$data = array( "fullName"=>Input::get("fullName") );
 
-					Mail::send("emails.registration",$data,function($message){
-
+					Mail::pretend("emails.registration",$data,function($message){
 							$message->subject("Welcome To Trav");
 							$message->from("no-reply@trav.com.ng","no-reply");
 							$message->to(Input::get("emailAddress"),Input::get("fullName"));
-
 					});
 			    return Redirect::to("/login")->withSuccess("Account Successfully Created! Login to your account to continue");
 
@@ -284,22 +426,41 @@ Route::post('/register',function(){
 
 });
 
-Route::get("/register_api/{fullname}/{email}/{phoneNo}/{password}",function($fullname,$email,$phoneNo,$password){
-
+Route::post("/register_api",function(){
+                            
+           
+                           /*$val_rules = array();
+                           $validator = Validator::make(Input:all(),$val_rules);
+                            */
 					$user = User::create([
 												"fullName"=>Input::get("fullName"),
 												"emailAddress"=>Input::get("emailAddress"),
 												"phoneNumber"=>Input::get("phoneNumber"),
-												"password"=>Hash::make(Input::get("password"))
+												"password"=>Hash::make(Input::get("password")),
+												
 											]);
 
 					if( $user->save() )
 					{
-						return '{"message":"Account Successfully Created"}';
+						$toEmail = Input::get("emailAddress");
+						$toFullname = Input::get("fullName");
+						$subject = "Welcome To Trav";
+						$fromEmail = "imraj@trav.com.ng";
+						$fromFullname = "Mujahid";
+						$data = array( "fullName"=>Input::get("fullName") );
+	
+						Mail::send("emails.registration",$data,function($message){
+	
+								$message->subject("Welcome To Trav");
+								$message->from("hello@trav.com.ng","Trav");
+								$message->to(Input::get("emailAddress"),Input::get("fullName"));
+	
+						});
+						return '{"message":"Account Successfully Created","status":"success"}';
 					}
 					else
 					{
-						return '{"message":"Error creating your account"}';
+						return '{"message":"Error creating your account","status":"error"}';
 					}
 
 });
@@ -321,17 +482,33 @@ Route::post('/login',function(){
 
 });
 
-Route::get("/login_api/{phoneNo}/{password}",function($phoneNo,$password){
+Route::get("/login_api/{phoneNumber}/{password}",function($phoneNumber,$password){
 
-	$user = User::where("phoneNumber","=",$phoneNo)->first();
+	$alphabets = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+
+	$t_min = 111111;
+	$t_max = 999999;
+	$t_alpha_1 = $alphabets[rand(0,25)];
+	$t_alpha_2 = $alphabets[rand(0,25)];
+	$t_alpha_3 = $alphabets[rand(0,25)];
+	$t_alpha_4 = $alphabets[rand(0,25)];
+	$t_random_num = rand($t_min,$t_max);
+	$token = $t_alpha_4.$t_alpha_1.$t_alpha_2.$t_alpha_3.$t_random_num.$t_alpha_1.$t_alpha_2;	
+
+
+	$user = User::where("phoneNumber","=",$phoneNumber)->first();
 	$pwd = $user->password;
 
+	
 	if(Hash::check($password,$pwd))
 	{
+		$user->mobileToken = $token;
+		$user->save();
+		
 		return $user;
 	}
-	return '{"message":"Invalid Login Details"}';
-
+	return '{"message":"Invalid Login Details","status":"failed"}';
+	
 });
 
 Route::get("logout",function(){
@@ -351,7 +528,8 @@ Route::get("/result/{id}/book",array("before"=>"auth",function($id){
 	$price = $query['price'];
 	$dropoff_location_id = $query['dropoff_location'];
 	$pickup_location_id = $query['pickup_location'];
-	$pickup_datetime = $query["pickup_datetime"];
+	$pickup_date = $query["pickup_date"];
+	$pickup_time = $query["pickup_time"];
 	$location_id = $query["location_id"];
 	$destination_id = $query["destination_id"];
 
@@ -367,7 +545,8 @@ Route::get("/result/{id}/book",array("before"=>"auth",function($id){
 							"Agency"=>$agency,
 							"DropOff_Location"=>$dropoff_location,
 							"PickUp_Location"=>$pickup_location,
-							"PickUp_DateTime"=>$pickup_datetime
+							"PickUp_Date"=>$pickup_date,
+							"PickUp_Time"=>$pickup_time
 						);
 
 	// Saving Transaction History
@@ -384,24 +563,108 @@ Route::get("/result/{id}/book",array("before"=>"auth",function($id){
 
 
 //All Tickets Purchased
-Route::get("tickets",function(){
+Route::get("tickets",array("before"=>"auth",function(){
 		$userId = Auth::user()->id;
-		$tickets = Ticket::whereUserid($userId)->get();
-		return View::make("trav.tickets")->with("tickets",$tickets);
-		//return "All Tickets";
-});
+		$tickets = Ticket::whereUserId($userId)->get();
+
+		if(sizeof($tickets) > 0)
+		{
+			$tickets_array = array();
+			foreach($tickets as $tick)
+			{
+				$ticket = array();
+
+				$ticket["userId"] = $tick["user_id"];
+
+				$travelplanId = $tick["travelplan_id"];
+
+				$ticket["travelPlanId"] = $tick["travelplan_id"];
+				$ticket["location"] = $tick["location"];
+				$ticket["destination"] = $tick["destination"];
+				$user = User::whereId($userId)->first();
+				$ticket["fullName"] = $user->fullName;
+				$ticket["phoneNumber"] = $user->phoneNumber;
+				$ticket["emailAddress"] = $user->emailAddress;
+				
+				
+				
+				$travelplan = Travelplan::whereId($travelplanId)->first();
+				$ticket["price"] = $travelplan["price"];
+		$ticket["date"] = $travelplan["pickup_date"];
+		$ticket["time"] = $travelplan["pickup_time"];
+
+				$agencyId = $travelplan["agency_id"];
+                $agency = Agency::whereId($agencyId)->first();
+                $pickup_location_id = $travelplan["pickup_location"];
+                $pickup_location = Pklocation::whereId($pickup_location_id)->first();
+                
+                $ticket["pickup_location_name"] = $pickup_location->location_name;
+                $ticket["pickup_location_address"] = $pickup_location->location_address;             
+
+                $dropoff_location_id = $travelplan["dropoff_location"];
+                $dropoff_location = Pklocation::whereId($dropoff_location_id)->first();
+
+                $ticket["dropoff_location_name"] = $dropoff_location->location_name;
+                $ticket["dropoff_location_address"] = $dropoff_location->location_address;
+
+		$ticket["agency"] = $agency->name;
+		$ticket["ticketId"] = $tick["ticket_id"];
+		$ticket["transactionId"] = $tick["transaction_id"];
+		$ticket["simplePayId"] = $tick["simplepay_id"];
+		$ticket["token"] = $tick["token"];
+
+			array_push($tickets_array,$ticket);
+			}
+			
+			return View::make("trav.tickets")->with("tickets",$tickets_array);
+		}
+		
+}));
 
 //View Individual Ticket
-Route::get("ticket/{id}",function($id){
-		//return View::make("trav.ticket");
-		$ticket = Ticket::whereId($id)->get();
-		return View::make("trav.ticket")->with("ticket",$ticket);
-		//return "Ticket #".$id;
-});
+Route::get("ticket/{token}",array("before"=>"auth",function($token){
+		$ticket = array();
+                $userId = Auth::user()->id;
+		$tick = Ticket::whereToken($token)->first();
+		$ticket["userId"] = $tick["user_id"];
+                $travelplanId = $tick["travelplan_id"];
+		$ticket["travelPlanId"] = $tick["travelplan_id"];
+		$ticket["location"] = $tick["location"];
+		$ticket["destination"] = $tick["destination"];
+		$user = User::whereId($userId)->first();
+		$ticket["fullName"] = $user->fullName;
+		$ticket["phoneNumber"] = $user->phoneNumber;
+		$ticket["emailAddress"] = $user->emailAddress;
 
-Route::get("notifications",function(){
-	return "All notifications";
-});
+			
+		$travelplan = Travelplan::whereId($travelplanId)->first();
+			
+	        $ticket["price"] = $travelplan["price"];
+		$ticket["date"] = $travelplan["pickup_date"];
+		$ticket["time"] = $travelplan["pickup_time"];
+                $agencyId = $travelplan["agency_id"];
+                 $agency = Agency::whereId($agencyId)->first();
+		$ticket["agency"] = $agency->name;
+                 $pickup_location_id = $travelplan["pickup_location"];
+                $pickup_location = Pklocation::whereId($pickup_location_id)->first();
+                
+                $ticket["pickup_location_name"] = $pickup_location->location_name;
+                $ticket["pickup_location_address"] = $pickup_location->location_address;             
+
+                $dropoff_location_id = $travelplan["dropoff_location"];
+                $dropoff_location = Pklocation::whereId($dropoff_location_id)->first();
+
+                $ticket["dropoff_location_name"] = $dropoff_location->location_name;
+                $ticket["dropoff_location_address"] = $dropoff_location->location_address;
+
+		$ticket["ticketId"] = $tick["ticket_id"];
+		$ticket["transactionId"] = $tick["transaction_id"];
+		$ticket["simplePayId"] = $tick["simplepay_id"];
+		$ticket["token"] = $tick["token"];
+                
+		return View::make("trav.ticket")->with("ticket",$ticket);
+}));
+
 
 Route::get("retrieve/password",function(){
 	return View::make("trav.retrieve_password");
@@ -447,8 +710,7 @@ Route::post("/reset/password",function(){
 		$user->save();
 
 		return Redirect::to("/login")->withSuccess("Password Reset Successful! Login to your account to continue");
-		//return $user;
-
+	
 	}
 
 });
@@ -473,15 +735,20 @@ Route::post("/retrieve/password",function(){
 			$token = $user->remember_token;
 			$user->password_reset_code = $token.md5($token).$reset_code;
 			//add password reset code to db
-			$user->save();
+			
 
-		  $emailAddress = $user->emailAddress;
+		    $emailAddress = $user->emailAddress;
 			$fullName = $user->fullName;
 			$password_reset_code = $user->password_reset_code;
 			$data = array("token"=>$token,"fullName"=>$fullName,"password_reset_code"=>$password_reset_code);
-		  //send email
-			Mail::pretend('emails.password_reset',$data,function($message){
-					$message->to($emailAddress,$fullName)->subject("Trav Password Reset");
+		  	$user->save();
+
+			//send email
+			Mail::pretend('emails.password_reset',$data,function($message)use($fullName){
+                                        $message->subject("Trav's Account Password Reset");                                
+			                $message->from("password-reset@trav.com.ng","Trav");
+					$message->to(Input::get("emailAddress"),$fullName);
+					
 			});
 
 			//return "http://trav.dev:90/retrieve/password/".$password_reset_code;
@@ -499,20 +766,18 @@ Route::get("/admin/users",function(){
 	return View::make("admin.users")->with("users",$users);
 });
 
-Route::get("/result/{id}/pay",function($id){
+Route::get("/result/{id}/pay",array("before"=>"auth",function($id){
 	$user = Auth::User();
 	$tplan = Travelplan::whereId($id)->get()->first();
 
-	//$paystackLibObject = \MAbiola\Paystack\Paystack::make();
-	//$getAuthorization = $paystackLibObject->startOneTimeTransaction("1000","mujahidraji@gmail.com");
-	//$auth_url = $getAuthorization["authorization_url"];
-
+	$id = $tplan["id"];
 	$agency_id = $tplan["agency_id"];
 	$location_id = $tplan["location_id"];
 	$destination_id = $tplan["destination_id"];
 	$dropoff_location_id = $tplan["dropoff_location"];
 	$pickup_location_id = $tplan["pickup_location"];
-	$pickup_datetime = $tplan["pickup_datetime"];
+	$pickup_date = $tplan["pickup_date"];
+	$pickup_time = $tplan["pickup_time"];
 	$price = $tplan["price"];
 
 	$agency = Agency::whereId($agency_id)->first();
@@ -522,12 +787,13 @@ Route::get("/result/{id}/pay",function($id){
 	$pickup_location = PKLocation::whereId($pickup_location_id)->first();
 
 
-	$tplan = array("agency_name" => $agency["name"],
+	$tplan = array("travelplan_id"=>$id,
+				   "agency_name" => $agency["name"],
 	               "location"=>$location["name"],
 								 "destination"=>$destination["name"],
 								 "pickup_name"=>$pickup_location["location_name"],"pickup_address"=>$pickup_location["location_address"],
 								 "dropoff_name"=>$dropoff_location["location_name"],"dropoff_address"=>$dropoff_location["location_address"],
-							   "pickup_datetime"=>$pickup_datetime,"price"=>$price);
+							   "pickup_date"=>$pickup_date,"price"=>$price,"pickup_time"=>$pickup_time);
 
  $loc = $location["name"];
  $dest = $destination["name"];
@@ -541,7 +807,7 @@ Route::get("/result/{id}/pay",function($id){
 	$transaction->save();
 	//Ends Saving Transaction History
 	return View::make("trav.pay")->with("tplan",$tplan)->with("user",$user);
-});
+}));
 
 Route::get("/about",function(){
 	return View::make("trav.about");
@@ -631,22 +897,30 @@ Route::post("/update_password",function(){
 	}
 });
 
-Route::get("/edit_kin",function(){
+Route::get("/edit_kin",array("before"=>"auth",function(){
 	return View::make("trav.new_kin");
-});
+}));
 
 Route::post("/update_kin",function(){
 	$fullname = Input::get("next_kin_fullname");
 	$phoneNo = Input::get("next_kin_phoneNo");
 	$userId = Auth::user()->id;
+	$userPhoneNo = Auth::user()->phoneNumber;
 
-	$user = User::find($userId);
-	$user->next_of_kin_name = $fullname;
-	$user->next_of_kin_phoneNo = $phoneNo;
+	if($phoneNo != $userPhoneNo)
+	{
+		$user = User::find($userId);
+		$user->next_of_kin_name = $fullname;
+		$user->next_of_kin_phoneNo = $phoneNo;
 
-	if($user->save())
-		return Redirect::to("/edit_kin")->withSuccess("Next Of Kin Profile Updated Successfully");
-
+		if($user->save())
+			return Redirect::to("/edit_kin")->withSuccess("Next Of Kin Profile Updated Successfully");
+	}
+	else
+	{
+		return Redirect::back()->withError("Next of kin's phone number and user's phone number cannot be the same");
+	}
+	
 });
 
 Route::get("/contact",function(){
@@ -657,28 +931,16 @@ Route::get("/contact",function(){
 
 Route::post("/contact",function(){
 
-	$email = "contact@trav.com.ng";
+	$email = "hello@trav.com.ng";
 	$msg_title = Input::get("title");
 	$msg_main = Input::get("message");
-  $fullName = $user->fullName ? $user->fullName : "Anon";
+    $fullName = $user->fullName ? $user->fullName : "Anon";
 	//return $msg_title." | ".$msg_main;
 	Mail::send($msg_main,function($message){
 		$message->to($email,$msg_title)->subject($msg_title." by ".$fullName);
 	});
 
-	return Redirect::to("/contact")->withSuccess("Message Sent. We'll get back to you in a 5 minutes");
-});
-
-Route::get("/activate",function(){
-		return View::make("trav.activate");
-});
-
-Route::post("/activate",function(){
-		$code = Input::get("code");
-		if($gen_code == $code)
-		{
-			return Redirect::to("/login");
-		}
+	return Redirect::to("/contact")->withSuccess("Message Sent. We'll get back to you shortly");
 });
 
 Route::get("/search/autocomplete",function(){
@@ -698,64 +960,70 @@ Route::post("/verify",function(){
 	$private_key = 'test_pr_e22a3c0f78474535b37d20381e1c1cd9';//'test_pr_demo';
 
 // Retrieve data returned in payment gateway callback
-$location = $_POST["location"];
-$destination = $_POST["destination"];
-$agency = $_POST["agency"];
-$email_address = $_POST["email_address"];
-$phone_number = $_POST["phone_number"];
-$price = $_POST["price"];
-$fullname = $_POST["fullname"];
-$token = $_POST["token"];
+		$location = $_POST["location"];
+		$destination = $_POST["destination"];
+		$agency = $_POST["agency"];
+		$travelplan_id = $_POST["travelplan_id"];
+		$email_address = $_POST["email_address"];
+		$phone_number = $_POST["phone_number"];
+		$price = $_POST["price"];
+		$fullname = $_POST["fullname"];
+		$token = $_POST["token"];
 
-$alphabets = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+		$alphabets = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
 
-$t_min = 111111;
-$t_max = 999999;
-$t_alpha_1 = $alphabets[rand(0,25)];
-$t_alpha_2 = $alphabets[rand(0,25)];
-$t_alpha_3 = $alphabets[rand(0,25)];
-$t_alpha_4 = $alphabets[rand(0,25)];
-$t_random_num = rand($t_min,$t_max);
-$transaction_id = $t_random_num.$t_alpha_1.$t_alpha_2.$t_alpha_3.$t_alpha_4;
+		$min = 111111111111;
+		$max = 999999999999;
+		$t_alpha_1 = $alphabets[rand(0,25)];
+		$t_alpha_2 = $alphabets[rand(0,25)];
+		$t_alpha_3 = $alphabets[rand(0,25)];
+		$t_alpha_4 = $alphabets[rand(0,25)];
+		$t_random_num = rand($t_min,$t_max);
+		$transaction_id = $t_random_num.$t_alpha_1.$t_alpha_2.$t_alpha_3.$t_alpha_4;
 
-$min = 111111111111;
-$max = 999999999999;
-$random_num = rand($min,$max);
-$alpha_num_1 = $alphabets[rand(0,25)];
-$alpha_num_2 = $alphabets[rand(0,25)];
-$alpha_num_3 = $alphabets[rand(0,25)];
-$ticket = $alpha_num_1.$alpha_num_2.$alpha_num_3.$random_num;
+		$min = 111111111111;
+		$max = 999999999999;
+		$random_num = rand($min,$max);
+		$alpha_num_1 = $alphabets[rand(0,25)];
+		$alpha_num_2 = $alphabets[rand(0,25)];
+		$alpha_num_3 = $alphabets[rand(0,25)];
+		$ticket_id = $alpha_num_1.$alpha_num_2.$alpha_num_3.$random_num;
 
-$data = array (
-'token' => $token,
-'location'=> $location,
-'destination'=>$destination,
-'transaction_id'=>$transaction_id,
-);
+		$data = array (
+		'token' => $token,
+		'location'=> $location,
+		'destination'=>$destination,
+		'transaction_id'=>$transaction_id,
+		);
 
-$data_string = json_encode($data);
+		$data_string = json_encode($data);
 
-$ch = curl_init();
+		$ch = curl_init();
 
-curl_setopt($ch, CURLOPT_URL, 'https://checkout.simplepay.ng/v1/payments/verify/');
-curl_setopt($ch, CURLOPT_USERPWD, $private_key . ':');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
-curl_setopt($ch, CURLOPT_HEADER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-'Content-Type: application/json',
-'Content-Length: ' . strlen($data_string)
-));
+		curl_setopt($ch, CURLOPT_URL, 'https://checkout.simplepay.ng/v1/payments/verify/');
+		curl_setopt($ch, CURLOPT_USERPWD, $private_key . ':');
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
 
-$curl_response = curl_exec($ch);
-$curl_response = preg_split("/\r\n\r\n/",$curl_response);
-//echo $curl_response;
+	
 
+		curl_setopt($ch, CURLOPT_HEADER, true);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			'Content-Type: application/json',
+			'Content-Length: ' . strlen($data_string)
+		));
 
-$response_content = $curl_response[1];
-$json_response = json_decode(chop($response_content), TRUE);
+		$curl_response = curl_exec($ch);
+		
+		$curl_response = preg_split("/\r\n\r\n/",$curl_response);
+
+		
+
+		$response_content = $curl_response[0];
+
+		$json_response = json_decode(chop($response_content), TRUE);
 
 $response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
@@ -766,17 +1034,7 @@ $simplePay = json_decode($response_content);
 if ($response_code == '200') {
 // even is http status code is 200 we still need to check transaction had issues or not
 if ($json_response['response_code'] == '20000'){
-	//header('Location: success.php');
-	echo "Location : ".$location."<br/>";
-	echo "Destination : ".$destination."<br/>";
-	echo "Agency : ".$agency."<br/>";
-	echo "Fullname : ".$fullname."<br/>";
-	echo "Email : ".$email_address."<br/>";
-	echo  "Phone : ".$phone_number."<br/>";
-	echo "Price : ".$price."<br/>";
-	echo "Token : ".$token."<br/>";
-	echo "Transaction_id : ".$transaction_id."<br/>";
-	echo "Ticket : ".$ticket;
+	
 
 	$created = $simplePay->created;
 	$captured = $simplePay->captured;
@@ -803,21 +1061,20 @@ if ($json_response['response_code'] == '20000'){
 	$source_brand = $source->brand;
 	$source_is_recurrent = $source->is_recurrent;
 	$source_id = $source->id;
-
-	$funding = $simplePay->funding;
-	$object = $simplePay->object;
+	$funding = $source->funding;
+	$object = $source->object;
 
 	$ticket = Ticket::create([
 		"location"=>$location,
 		"destination"=>$destination,
+		"travelplan_id"=>$travelplan_id,
+		"user_id"=>Auth::user()->id,
 		"transaction_id"=>$transaction_id,
-		"email_address"=>$email_address,
-		"phone_number"=>$phone_number,
-		"price"=>$price,
-		"fullname"=>$fullname,
-		"agency"=>$agency,
-		"id"=>$id
+		"ticket_id"=>$ticket_id,
+		"simplepay_id"=>$id,
+		"token"=>$token
 	]);
+	$ticket->save();
 
 	$tb_simple_pay = SimplePay::create([
 		"created"=>$created,
@@ -841,43 +1098,76 @@ if ($json_response['response_code'] == '20000'){
 		"source_brand"=>$source_brand,
 		"source_is_recurrent"=>$source_is_recurrent
 	]);
+	$tb_simple_pay->save();
 
-	// add to simple pay table
+	//send ticket to email address
+	$travelplan = Travelplan::whereId($travelplan_id)->first();
+		
+	$date = $travelplan["pickup_date"];
+	$time = $travelplan["pickup_time"];
+    $agencyId = $travelplan["agency_id"];
+   	
+    $pickup_location_id = $travelplan["pickup_location"];
+    $pickup_location = Pklocation::whereId($pickup_location_id)->first();
+    $pickup_location_name = $pickup_location->location_name;
+    $pickup_location_address = $pickup_location->location_address;             
 
-	/*
-	$ticket_query = mysql_query("INSERT INTO tickets(location,destination,transaction_id,email_address,phone_number,price,fullname,agency,simplepay_id)
-															 VALUES('".$location."','".$destination."','".$transaction_id."','".$email_address."','".$phone_number."','".$price."',
-																				 '".$fullname."','".$agency."','".$id."') ");
+    $dropoff_location_id = $travelplan["dropoff_location"];
+    $dropoff_location = Pklocation::whereId($dropoff_location_id)->first();
+    $dropoff_location_name = $dropoff_location->location_name;
+    $dropoff_location_address = $dropoff_location->location_address; 
+
+    $data = array("fullname"=>$fullname,
+    			  "email"=>$email_address,
+    			  "agency"=>$agency,
+    			  "location"=>$location,
+    			  "destination"=>$destination,
+    			  "price"=>$price,
+    			  "ticket_id"=>$ticket_id,
+    			  "transaction_id"=>$transaction_id,
+    			  "simplepay_id"=>$simplepay_id,
+    			  "token"=>$token,
+    			  "pickup_location_address"=>$pickup_location_address,
+    			  "dropoff_location_address"=>$dropoff_location_address,
+    			  "date"=>$date,
+    			  "time"=>$time
+    			);
 
 
+	Mail::send("emails.ticket",$data,function($message)
+		use($fullname,$email_address,$agency,$location,$destination,
+				$price,$ticket_id,$transaction_id,simplepay_id,token,
+				$pickup_location_name,$pickup_location_address,$dropoff_location_name,
+				$dropoff_location_address,$date,$time){
+		$message->subject($agency + " Ticket for " + $location + " to " + $destination);
+		$message->to($email_address);
+		$message->from("ticket@trav.com.ng");
+	});
 
-	$query = mysql_query("INSERT INTO simple_pay(created,captured,id,customer_address_postal,customer_phone_number,customer_address,customer_address_city,
-																							 customer_email_address,customer_id,customer_address_country,customer_address_state,payment_reference,currency,
-																							 response_code,source_exp_year,source_exp_month,source_id,source_last4,source_brand,source_is_recurrent)
-							VALUES('".$created."','".$captured."','".$id."','".$customer_address_postal."','".$customer_phone_number."','".$customer_address."',
-										 '".$customer_address_city."','".$customer_email_address."','".$customer_id."','".$customer_address_country."','".$customer_address_state."',
-										 '".$payment_reference."','".$currency."','".$response_code."','".$source_exp_year."','".$source_exp_month."','".$source_id."','".$source_last4."',
-										 '".$source_brand."','".$source_is_recurrent."')");
-  */
+	//send ticket to phone number
 
-}else if($json_response['response_code'] == '11000'){
-	echo "Request at a later time";
+	//redirect to ticket view
+	return Redirect::to("ticket/".$token);
+
+	
+
 }
-else if($json_response['response_code'] == '50100')
-{
-	echo "Technical error with credit card or bank access";
-}
-} else {
-//header('Location: failed.php');
-	echo "Failed Now : ".$response_code." | Response Content : " . $response_content;
-}
+	else if($json_response['response_code'] == '11000'){
+		//echo "Request at a later time";
+		return Redirect::back()->withError("Payment Failed ! Try again later or Contact our customer care  ");
+	}
+	else if($json_response['response_code'] == '50100')
+	{
+		//echo "Technical error with credit card or bank access";
+		return Redirect::back()->withError("Technical error with credit card or bank access! Contact our customer care for more information");
+	}
+	else{
+	     //echo "failed : " .$json_response['response_code']."|".$response_code;
+	     return Redirect::back()->withError("Payment Failed ! Try again later or Contact our customer care  ");
+	}
+} 
+else {
 
-});
-
-
-Route::get("/process_payment",function(){
-	// Deduct Money
-  //mmc.orgfree.com/verify.php
-
-	//Generate Ticket
-});
+	//echo "Failed Now : ".$response_code." | Response Content : " . $response_content;
+	return Redirect::back()->withError("An error occured! Try again later or contact our customer care");
+}});

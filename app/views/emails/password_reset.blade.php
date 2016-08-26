@@ -1,4 +1,4 @@
-<h4>Hi {{$fullName}}</h4>
+<h4>Hello {{$fullName}},</h4>
 
 <h5>
   Here is the password reset link you requested for.
@@ -10,8 +10,8 @@
 </p>
 
 <p>
-  You are receiving this email because you initiated for
-  password reset for your Trav's account. <br/>
+  You are receiving this email because you initiated a password reset process for
+  your Trav's account. <br/>
   Ignore this email if you didn't.
 </p>
 

@@ -41,6 +41,18 @@ class PlaceController extends \BaseController {
 		$place = new Place;
 		$place->name = Input::get("name");
 
+		$placeName = Input::get("name");
+		$city = urlencode($placeName);
+		$url = "http://maps.googleapis.com/maps/api/geocode/json?address=$city";
+		$json_data = file_get_contents($url);
+		$result = json_decode($json_data, TRUE);
+		$latitude = $result['results'][0]['geometry']['location']['lat'];
+		$longitude = $result['results'][0]['geometry']['location']['lng'];
+
+		$place->longitude = $longitude;
+		$place->latitude = $latitude;
+		
+
 		if($place->save())
 		{
 			// Store the activity
@@ -75,7 +87,8 @@ class PlaceController extends \BaseController {
 	 */
 	public function edit($id)
 	{
-		//
+		$place = Place::whereId($id)->first();
+		return View::make("admin.edit_place")->with("place",$place);
 	}
 
 
@@ -87,7 +100,23 @@ class PlaceController extends \BaseController {
 	 */
 	public function update($id)
 	{
-		//
+		$place = Place::find($id)->first();
+		$place->name = Input::get("name");
+
+		$placeName = Input::get("name");
+
+		$city = urlencode($placeName);
+		$url = "http://maps.googleapis.com/maps/api/geocode/json?address=$city";
+		$json_data = file_get_contents($url);
+		$result = json_decode($json_data, TRUE);
+		$latitude = $result['results'][0]['geometry']['location']['lat'];
+		$longitude = $result['results'][0]['geometry']['location']['lng'];
+
+		$place->longitude = $longitude;
+		$place->latitude = $latitude;
+		
+		
+
 	}
 
 
